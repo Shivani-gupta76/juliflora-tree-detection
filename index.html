@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Juliflora Tree Detection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: radial-gradient(circle at top, #1e8e3e 0, #0b3b1b 55%, #022109 100%);
+      margin: 0;
+      padding: 0;
+      color: white;
+      text-align: center;
+    }
+
+    .header {
+      background: linear-gradient(90deg, #14532d, #22c55e);
+      padding: 16px;
+      font-size: 22px;
+      font-weight: bold;
+      box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .header span {
+      opacity: 0.9;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.9);
+      color: #111827;
+      width: 480px;
+      margin: 45px auto 30px auto;
+      padding: 28px 30px 30px;
+      border-radius: 20px;
+      box-shadow: 0px 18px 40px rgba(0,0,0,0.35);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(209, 213, 219, 0.8);
+    }
+
+    h1 {
+      margin-bottom: 6px;
+      color: #15803d;
+    }
+
+    p.subtitle {
+      margin-top: 0;
+      margin-bottom: 18px;
+      font-size: 14px;
+      color: #4b5563;
+    }
+
+    input[type="file"] {
+      margin: 15px 0 8px;
+      padding: 6px;
+      width: 100%;
+    }
+
+    button {
+      background: linear-gradient(135deg, #15803d, #16a34a);
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 999px;
+      margin-top: 6px;
+      box-shadow: 0 6px 14px rgba(22, 163, 74, 0.45);
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #166534, #16a34a);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    #loading {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #4b5563;
+    }
+
+    #result {
+      margin-top: 16px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #15803d;
+    }
+
+    #confidence {
+      margin-top: 6px;
+      font-size: 14px;
+      color: #4b5563;
+    }
+
+    img {
+      margin-top: 15px;
+      max-width: 100%;
+      border-radius: 12px;
+      border: 3px solid #16a34a;
+    }
+
+    footer {
+      margin-top: 10px;
+      margin-bottom: 18px;
+      font-size: 14px;
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    🌳 <span>Juliflora AI Detection System</span>
+  </div>
+
+  <div class="container">
+    <h1>Juliflora Tree Detection</h1>
+    <p class="subtitle">Upload a drone image to detect <strong>Prosopis juliflora</strong> trees using YOLOv8.</p>
+
+    <input type="file" id="imageInput" accept="image/*">
+    <br>
+    <button id="detectBtn" onclick="uploadImage()">Upload &amp; Detect</button>
+
+    <div id="loading" style="display:none;">🔍 Running detection... please wait</div>
+
+    <div id="result"></div>
+    <div id="confidence"></div>
+
+    <img id="outputImage" alt="">
+  </div>
+
+  <footer>
+    Mini Project – Juliflora Detection using YOLOv8 &amp; FastAPI
+  </footer>
+
+  <script>
+    async function uploadImage() {
+      const fileInput = document.getElementById("imageInput");
+      const resultDiv = document.getElementById("result");
+      const confidenceDiv = document.getElementById("confidence");
+      const outputImg = document.getElementById("outputImage");
+      const loadingDiv = document.getElementById("loading");
+      const detectBtn = document.getElementById("detectBtn");
+
+      if (!fileInput.files.length) {
+        alert("Please select an image first!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+
+      // Reset UI
+      resultDiv.innerHTML = "";
+      confidenceDiv.innerHTML = "";
+      outputImg.src = "";
+      loadingDiv.style.display = "block";
+      detectBtn.disabled = true;
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/upload/image", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        // Show tree count
+        const count = data.tree_count ?? (data.detections ? data.detections.length : 0);
+        resultDiv.innerHTML = "✅ Detected Trees: " + count;
+
+        // Compute average confidence if detections exist
+        if (data.detections && data.detections.length > 0) {
+          const confs = data.detections.map(d => d.confidence || 0);
+          const avg = confs.reduce((a, b) => a + b, 0) / confs.length;
+          confidenceDiv.innerHTML = "Average confidence: " + (avg * 100).toFixed(1) + "%";
+        } else {
+          confidenceDiv.innerHTML = "No Juliflora detected in this image.";
+        }
+
+        // Show annotated image if path is present
+        if (data.annotated_image) {
+          const cleanPath = data.annotated_image.replace(/\\/g, "/");
+          outputImg.src = "http://127.0.0.1:8000/" + cleanPath;
+        }
+
+      } catch (error) {
+        console.error(error);
+        alert("Error connecting to backend!");
+        resultDiv.innerHTML = "❌ Detection failed.";
+        confidenceDiv.innerHTML = "";
+      } finally {
+        loadingDiv.style.display = "none";
+        detectBtn.disabled = false;
+      }
+    }
+  </script>
+
+</body>
+</html>

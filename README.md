@@ -106,12 +106,13 @@ juliflora-tree-detection/
 
 ```powershell
 
-\& ".\\.venv\\Scripts\\Activate.ps1"
 
+cd "C:\Users\sales\OneDrive\Desktop\Julliflora tree"
+
+.\.venv\Scripts\activate
 
 
 . Run the Backend Server
-
 
 
 cd juliflora\_backend
@@ -126,7 +127,7 @@ Backend will run on:
 
 
 
-http://127.0.0.1:8000
+http://127.0.0.1:8000/docs
 
 
 

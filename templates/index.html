@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI-Based Juliflora Detection System</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      font-family: Arial, sans-serif;
+      background:
+      radial-gradient(circle at top,
+      #1f9d47 0%,
+      #0b3b1b 55%,
+      #02150a 100%);
+      min-height:100vh;
+      color:white;
+    }
+
+    .header{
+      width:100%;
+      padding:18px;
+      text-align:center;
+      background:linear-gradient(90deg,#14532d,#16a34a);
+      font-size:28px;
+      font-weight:bold;
+      letter-spacing:1px;
+      box-shadow:0 4px 18px rgba(0,0,0,0.35);
+    }
+
+    .header small{
+      display:block;
+      font-size:14px;
+      font-weight:normal;
+      margin-top:6px;
+      opacity:0.9;
+    }
+
+    .container{
+      width:90%;
+      max-width:900px;
+      margin:40px auto;
+      background:rgba(255,255,255,0.95);
+      color:#111827;
+      padding:35px;
+      border-radius:25px;
+      box-shadow:0 20px 45px rgba(0,0,0,0.35);
+    }
+
+    h1{
+      text-align:center;
+      color:#15803d;
+      font-size:52px;
+      margin-bottom:10px;
+    }
+
+    .subtitle{
+      text-align:center;
+      color:#4b5563;
+      margin-bottom:30px;
+      font-size:18px;
+      line-height:1.5;
+    }
+
+    .upload-section{
+      text-align:center;
+      margin-bottom:25px;
+    }
+
+    input[type="file"]{
+      margin-bottom:20px;
+      font-size:15px;
+    }
+
+    button{
+      background:linear-gradient(135deg,#15803d,#16a34a);
+      color:white;
+      border:none;
+      padding:14px 34px;
+      font-size:18px;
+      font-weight:bold;
+      border-radius:999px;
+      cursor:pointer;
+      transition:0.3s;
+      box-shadow:0 8px 20px rgba(22,163,74,0.4);
+    }
+
+    button:hover{
+      transform:translateY(-2px);
+      background:linear-gradient(135deg,#166534,#16a34a);
+    }
+
+    button:disabled{
+      opacity:0.7;
+      cursor:not-allowed;
+    }
+
+    #loading{
+      display:none;
+      text-align:center;
+      margin-top:20px;
+      color:#374151;
+      font-size:16px;
+      font-weight:bold;
+    }
+
+    .results-box{
+      margin-top:25px;
+      background:#f0fdf4;
+      border:2px solid #22c55e;
+      padding:18px;
+      border-radius:18px;
+    }
+
+    #result{
+      font-size:28px;
+      font-weight:bold;
+      color:#15803d;
+      margin-bottom:10px;
+      text-align:center;
+    }
+
+    #confidence{
+      text-align:center;
+      color:#374151;
+      font-size:18px;
+    }
+
+    #outputImage{
+      width:100%;
+      margin-top:25px;
+      border-radius:18px;
+      border:4px solid #16a34a;
+      display:none;
+    }
+
+    .features{
+      margin-top:25px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:15px;
+    }
+
+    .feature-card{
+      background:#f9fafb;
+      border-left:5px solid #16a34a;
+      padding:15px;
+      border-radius:12px;
+      box-shadow:0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    .feature-card h3{
+      color:#15803d;
+      margin-bottom:8px;
+      font-size:18px;
+    }
+
+    .feature-card p{
+      font-size:14px;
+      color:#4b5563;
+      line-height:1.5;
+    }
+
+    @media(max-width:768px){
+
+      h1{
+        font-size:36px;
+      }
+
+      .container{
+        padding:22px;
+      }
+
+      .subtitle{
+        font-size:16px;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    🌳 AI-Based Juliflora Detection System
+    <small>AI + Drone Intelligence for Invasive Species Monitoring</small>
+  </div>
+
+  <div class="container">
+
+    <h1>Juliflora Detection</h1>
+
+    <p class="subtitle">
+      AI-powered detection and monitoring of
+      <strong>Prosopis Juliflora</strong>
+      using drone imagery and YOLOv8 deep learning.
+    </p>
+
+    <div class="upload-section">
+
+      <input type="file" id="imageInput" accept="image/*">
+
+      <br>
+
+      <button id="detectBtn" onclick="uploadImage()">
+        Analyze Drone Image
+      </button>
+
+      <div id="loading">
+        🔍 Running AI detection... Please wait
+      </div>
+
+    </div>
+
+    <div class="results-box">
+
+      <div id="result">
+        Waiting for image upload...
+      </div>
+
+      <div id="confidence"></div>
+
+    </div>
+
+    <img id="outputImage" alt="Detection Output">
+
+    <div class="features">
+
+      <div class="feature-card">
+        <h3>YOLOv8 Detection</h3>
+        <p>
+          Deep learning-based object detection model for identifying Juliflora regions from drone imagery.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <h3>Drone Monitoring</h3>
+        <p>
+          Supports aerial monitoring of invasive vegetation using high-resolution drone images.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <h3>AI Analysis</h3>
+        <p>
+          Generates annotated outputs with detected boundaries and confidence scores.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+<script>
+
+async function uploadImage() {
+
+  const fileInput = document.getElementById("imageInput");
+  const resultDiv = document.getElementById("result");
+  const confidenceDiv = document.getElementById("confidence");
+  const outputImg = document.getElementById("outputImage");
+  const loadingDiv = document.getElementById("loading");
+  const detectBtn = document.getElementById("detectBtn");
+
+  if (!fileInput.files.length) {
+
+    alert("Please select an image first!");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", fileInput.files[0]);
+
+  resultDiv.innerHTML = "";
+  confidenceDiv.innerHTML = "";
+  outputImg.style.display = "none";
+
+  loadingDiv.style.display = "block";
+  detectBtn.disabled = true;
+
+  try {
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/upload/image",
+      {
+        method: "POST",
+        body: formData
+      }
+    );
+
+    const data = await response.json();
+
+    const count =
+      data.boundary_count ??
+      (data.detections ? data.detections.length : 0);
+
+    resultDiv.innerHTML =
+      "✅ Detected Boundaries: " + count;
+
+    if (data.detections && data.detections.length > 0) {
+
+      const confs =
+        data.detections.map(d => d.confidence || 0);
+
+      const avg =
+        confs.reduce((a,b)=>a+b,0) / confs.length;
+
+      confidenceDiv.innerHTML =
+        "Average Confidence: " +
+        (avg * 100).toFixed(1) + "%";
+
+    } else {
+
+      confidenceDiv.innerHTML =
+        "No Juliflora regions detected.";
+    }
+
+    if (data.annotated_image) {
+
+      const cleanPath =
+        data.annotated_image.replace(/\\/g,"/");
+
+      outputImg.src =
+        "http://127.0.0.1:8000/" + cleanPath;
+
+      outputImg.style.display = "block";
+    }
+
+  } catch(error) {
+
+    console.error(error);
+
+    resultDiv.innerHTML =
+      "❌ Detection failed.";
+
+    confidenceDiv.innerHTML =
+      "Backend connection error.";
+
+  } finally {
+
+    loadingDiv.style.display = "none";
+    detectBtn.disabled = false;
+  }
+}
+
+</script>
+
+</body>
+</html>
